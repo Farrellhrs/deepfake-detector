@@ -6,13 +6,16 @@ A user-friendly Streamlit web application for detecting AI-generated and deepfak
 
 ### How to Use the App
 
-1. **Upload Video**: Click "Choose a video file" and select your video
+1. **Choose Input Method**:
+   - **Upload File**: Click "Choose a video file" and select from your device
+   - **Instagram Link**: Paste an Instagram post/reel URL and click "Download Instagram Video"
 2. **Analyze**: Click "Analyze Video" to start the detection process
 3. **View Results**: See if your video contains AI-generated content
 4. **Download Results**: Optionally save the analysis as a CSV file
 
-### Supported Formats
-- MP4, AVI, MOV, MKV
+### Supported Sources
+- **Local Files**: MP4, AVI, MOV, MKV
+- **Instagram**: Posts, Reels, IGTV videos (public posts only)
 
 ### What It Detects
 The system can identify 17 different types of AI-generated content including:

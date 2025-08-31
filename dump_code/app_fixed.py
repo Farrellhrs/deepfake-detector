@@ -48,12 +48,9 @@ def download_instagram_video(url: str) -> Optional[str]:
         temp_dir = tempfile.mkdtemp()
         ydl_opts = {
             'outtmpl': os.path.join(temp_dir, 'instagram_video.%(ext)s'),
-            'format': 'best[height<=480][ext=mp4]/best[height<=720][ext=mp4]/best[ext=mp4]/best',  # Prefer smaller videos
+            'format': 'best[ext=mp4]/best',
             'quiet': True,
             'no_warnings': True,
-            'writesubtitles': False,
-            'writeautomaticsub': False,
-            'extract_flat': False,
         }
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -61,15 +58,9 @@ def download_instagram_video(url: str) -> Optional[str]:
             
             for file in os.listdir(temp_dir):
                 if file.startswith('instagram_video.'):
-                    file_path = os.path.join(temp_dir, file)
-                    # Check file size
-                    file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
-                    if file_size_mb > 50:
-                        st.info(f"📹 Downloaded video is {file_size_mb:.1f}MB - analysis may take longer")
-                    return file_path
+                    return os.path.join(temp_dir, file)
         return None
-    except Exception as e:
-        st.error(f"Download failed: Please check if the Instagram post is public and contains a video")
+    except:
         return None
 
 def cleanup_temp_files(file_path: str):
@@ -98,47 +89,30 @@ class VideoFile:
 def send_video_to_api(video_file) -> Optional[dict]:
     """Send video file to deepfake detection API"""
     try:
-        # Check file size before sending
-        file_size_mb = video_file.size / (1024 * 1024)
-        
-        # Show file info for debugging
-        st.info(f"📊 Processing video: {video_file.name} ({file_size_mb:.1f}MB)")
-        
-        if file_size_mb > 100:
-            st.warning(f"⚠️ Large file detected ({file_size_mb:.1f}MB). This may take longer to process.")
-        
         files = {
             'file': (video_file.name, video_file.getvalue(), video_file.type)
         }
         
-        # Add headers for ngrok
-        headers = {
-            'ngrok-skip-browser-warning': 'true'
-        }
-        
-        # Use longer timeout and add headers
         response = requests.post(
             f"{API_ENDPOINT}/detect",
             files=files,
-            headers=headers,
             timeout=API_TIMEOUT
         )
         
         if response.status_code == 200:
             return response.json()
         else:
-            st.error(f"Service Error: {response.status_code} - {response.text}")
+            st.error(f"Service Error: {response.status_code}")
             return None
             
     except requests.exceptions.ConnectionError:
         st.error("Could not connect to the detection service. Please try again later.")
         return None
     except requests.exceptions.Timeout:
-        st.error(f"Request timed out after {API_TIMEOUT} seconds. The video might be too large or the service is busy.")
-        st.info("💡 Try with a shorter video or try again later")
+        st.error("Request timed out. Please try again with a smaller video.")
         return None
     except Exception as e:
-        st.error(f"An error occurred while processing your video: {str(e)}")
+        st.error("An error occurred while processing your video.")
         return None
 
 def process_predictions(predictions: List[float]) -> pd.DataFrame:
@@ -386,10 +360,8 @@ def main():
                                 # Generate filename
                                 if has_instagram_url:
                                     filename = f"instagram_analysis_{int(time.time())}.csv"
-                                elif uploaded_file:
-                                    filename = f"video_analysis_{uploaded_file.name}_{int(time.time())}.csv"
                                 else:
-                                    filename = f"analysis_results_{int(time.time())}.csv"
+                                    filename = f"video_analysis_{uploaded_file.name}_{int(time.time())}.csv"
                                 
                                 st.download_button(
                                     label="📥 Download Results as CSV",
