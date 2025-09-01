@@ -1,7 +1,7 @@
 # Configuration file for Deepfake Detection App
 
 # API settings - Configure your ngrok URL here
-API_ENDPOINT = "https://69d824f924cb.ngrok-free.app"  # Your actual ngrok URL
+API_ENDPOINT = "https://e384961c5981.ngrok-free.app"  # Your actual ngrok URL
 API_TIMEOUT = 180  # Timeout in seconds for API requests (3 minutes for larger videos)
 MAX_FILE_SIZE_MB = 100  # Maximum file size in MB
 
